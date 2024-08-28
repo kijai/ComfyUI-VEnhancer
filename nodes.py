@@ -33,6 +33,7 @@ class DownloadAndLoadVEnhancerModel:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
+            "precision": (["fp16", "bf16", "fp8_e4m3fn"], {"default": "fp16"}),
             },
         }
     RETURN_TYPES = ("VENCHANCER_MODEL",)
@@ -40,13 +41,12 @@ class DownloadAndLoadVEnhancerModel:
     FUNCTION = "loadmodel"
     CATEGORY = "VEnhancer"
 
-    def loadmodel(self):
+    def loadmodel(self, precision):
         device = mm.get_torch_device()
         mm.soft_empty_cache()
-        #dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[precision]
+        dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp8_e4m3fn": torch.float8_e4m3fn}[precision]
 
         pbar = comfy.utils.ProgressBar(1)
-        dtype = torch.float16
         
         download_path = os.path.join(folder_paths.models_dir, "venhancer")
         model_path = os.path.join(download_path, "venhancer_paper-fp16.safetensors")

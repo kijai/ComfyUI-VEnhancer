@@ -91,17 +91,7 @@ class VEnhancer():
         file_name = f'{text}.mp4'
         save_video(output, self.result_dir, file_name, fps=target_fps)
         return os.path.join(self.result_dir, file_name)
-    
-    def download_model(self):
-        REPO_ID = 'jwhejwhe/VEnhancer'
-        filename = 'venhancer_paper.pt'
-        ckpt_dir = './ckpts/'
-        os.makedirs(ckpt_dir, exist_ok=True)
-        local_file = os.path.join(ckpt_dir, filename)
-        if not os.path.exists(local_file):
-            logger.info(f'Downloading the VEnhancer checkpoint...')
-            hf_hub_download(repo_id=REPO_ID, filename=filename, local_dir=ckpt_dir)
-        self.model_path = local_file
+
     
 
 def parse_args() -> Namespace:

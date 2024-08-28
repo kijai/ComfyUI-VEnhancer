@@ -19,8 +19,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class VideoToVideo():
-    def __init__(self, generator):
-        self.device = torch.device(f'cuda:0')
+    def __init__(self, generator, device):
+        self.device = device
         clip_encoder = FrozenOpenCLIPEmbedder(device=self.device, pretrained='laion2b_s32b_b79k')
         clip_encoder.model.to(self.device)
         self.clip_encoder = clip_encoder
