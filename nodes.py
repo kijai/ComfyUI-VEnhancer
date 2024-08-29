@@ -76,7 +76,7 @@ class DownloadAndLoadVEnhancerModel:
         generator.to(device).eval()
         print("leftover_keys", leftover_keys)
     
-        self.model = VideoToVideo(generator)
+        self.model = VideoToVideo(generator, device)
         
 
         return (self.model,)
