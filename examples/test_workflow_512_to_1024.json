@@ -1,14 +1,14 @@
 {
-  "last_node_id": 22,
-  "last_link_id": 43,
+  "last_node_id": 23,
+  "last_link_id": 46,
   "nodes": [
     {
       "id": 13,
       "type": "VAELoader",
-      "pos": [
-        616,
-        674
-      ],
+      "pos": {
+        "0": 616,
+        "1": 674
+      },
       "size": {
         "0": 315,
         "1": 58
@@ -16,6 +16,7 @@
       "flags": {},
       "order": 0,
       "mode": 0,
+      "inputs": [],
       "outputs": [
         {
           "name": "VAE",
@@ -34,195 +35,18 @@
       ]
     },
     {
-      "id": 20,
-      "type": "ImageConcanate",
-      "pos": [
-        1038,
-        795
-      ],
-      "size": {
-        "0": 315,
-        "1": 102
-      },
-      "flags": {},
-      "order": 8,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image1",
-          "type": "IMAGE",
-          "link": 37
-        },
-        {
-          "name": "image2",
-          "type": "IMAGE",
-          "link": 34
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [],
-          "slot_index": 0,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ImageConcanate"
-      },
-      "widgets_values": [
-        "right",
-        false
-      ]
-    },
-    {
-      "id": 21,
-      "type": "ImageResizeKJ",
-      "pos": [
-        633,
-        835
-      ],
-      "size": {
-        "0": 315,
-        "1": 266
-      },
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 36
-        },
-        {
-          "name": "get_image_size",
-          "type": "IMAGE",
-          "link": null
-        },
-        {
-          "name": "width_input",
-          "type": "INT",
-          "link": null,
-          "widget": {
-            "name": "width_input"
-          }
-        },
-        {
-          "name": "height_input",
-          "type": "INT",
-          "link": null,
-          "widget": {
-            "name": "height_input"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            37
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "ImageResizeKJ"
-      },
-      "widgets_values": [
-        1024,
-        1024,
-        "lanczos",
-        false,
-        2,
-        0,
-        0,
-        "disabled"
-      ]
-    },
-    {
-      "id": 10,
-      "type": "GetImageSizeAndCount",
-      "pos": [
-        337,
-        254
-      ],
-      "size": {
-        "0": 210,
-        "1": 86
-      },
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 12
-        }
-      ],
-      "outputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "links": [
-            27,
-            36
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "720 width",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        },
-        {
-          "name": "480 height",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        },
-        {
-          "name": "16 count",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "GetImageSizeAndCount"
-      }
-    },
-    {
       "id": 16,
       "type": "VEnhancerUnpad",
-      "pos": [
-        1085.3333740234375,
-        507.8021240234375
-      ],
+      "pos": {
+        "0": 1085.3333740234375,
+        "1": 507.8021240234375
+      },
       "size": {
         "0": 210,
         "1": 46
       },
       "flags": {},
-      "order": 7,
+      "order": 6,
       "mode": 0,
       "inputs": [
         {
@@ -241,7 +65,6 @@
           "name": "images",
           "type": "IMAGE",
           "links": [
-            34,
             41
           ],
           "slot_index": 0,
@@ -253,102 +76,18 @@
       }
     },
     {
-      "id": 8,
-      "type": "VHS_LoadVideo",
-      "pos": [
-        -100,
-        256
-      ],
-      "size": [
-        409.8638468146642,
-        535.9092407226562
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "meta_batch",
-          "type": "VHS_BatchManager",
-          "link": null
-        },
-        {
-          "name": "vae",
-          "type": "VAE",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            12
-          ],
-          "slot_index": 0,
-          "shape": 3
-        },
-        {
-          "name": "frame_count",
-          "type": "INT",
-          "links": null,
-          "shape": 3
-        },
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "links": null,
-          "shape": 3
-        },
-        {
-          "name": "video_info",
-          "type": "VHS_VIDEOINFO",
-          "links": null,
-          "shape": 3
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "VHS_LoadVideo"
-      },
-      "widgets_values": {
-        "video": "CogVideoX5B_SquirrelSeeds_00002.mp4",
-        "force_rate": 0,
-        "force_size": "Disabled",
-        "custom_width": 512,
-        "custom_height": 512,
-        "frame_load_cap": 16,
-        "skip_first_frames": 0,
-        "select_every_nth": 1,
-        "choose video to upload": "image",
-        "videopreview": {
-          "hidden": false,
-          "paused": false,
-          "params": {
-            "frame_load_cap": 16,
-            "skip_first_frames": 0,
-            "force_rate": 0,
-            "filename": "CogVideoX5B_SquirrelSeeds_00002.mp4",
-            "type": "input",
-            "format": "video/mp4",
-            "select_every_nth": 1
-          },
-          "muted": false
-        }
-      }
-    },
-    {
       "id": 9,
       "type": "VHS_VideoCombine",
-      "pos": [
-        1509,
-        156
-      ],
+      "pos": {
+        "0": 1509,
+        "1": 156
+      },
       "size": [
         767.7296142578125,
-        822.4864095052083
+        1071.7296142578125
       ],
       "flags": {},
-      "order": 10,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
@@ -410,17 +149,18 @@
     {
       "id": 2,
       "type": "DownloadAndLoadVEnhancerModel",
-      "pos": [
-        126,
-        80
-      ],
-      "size": {
-        "0": 289.2442932128906,
-        "1": 58
+      "pos": {
+        "0": 107,
+        "1": 75
       },
+      "size": [
+        353.75486160927505,
+        82
+      ],
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
+      "inputs": [],
       "outputs": [
         {
           "name": "venhancer_model",
@@ -435,22 +175,107 @@
         "Node name for S&R": "DownloadAndLoadVEnhancerModel"
       },
       "widgets_values": [
+        "venhancer_v2-fp16.safetensors",
         "fp16"
       ]
     },
     {
+      "id": 8,
+      "type": "VHS_LoadVideo",
+      "pos": {
+        "0": -100,
+        "1": 256
+      },
+      "size": [
+        409.8638610839844,
+        665.8638610839844
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "link": null
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            12
+          ],
+          "slot_index": 0,
+          "shape": 3
+        },
+        {
+          "name": "frame_count",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "video_info",
+          "type": "VHS_VIDEOINFO",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_LoadVideo"
+      },
+      "widgets_values": {
+        "video": "wolf_source-new.mp4",
+        "force_rate": 0,
+        "force_size": "Disabled",
+        "custom_width": 512,
+        "custom_height": 512,
+        "frame_load_cap": 16,
+        "skip_first_frames": 0,
+        "select_every_nth": 1,
+        "choose video to upload": "image",
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "frame_load_cap": 16,
+            "skip_first_frames": 0,
+            "force_rate": 0,
+            "filename": "wolf_source-new.mp4",
+            "type": "input",
+            "format": "video/mp4",
+            "select_every_nth": 1
+          },
+          "muted": false
+        }
+      }
+    },
+    {
       "id": 12,
       "type": "VAEDecode",
-      "pos": [
-        1005,
-        148
-      ],
+      "pos": {
+        "0": 1004,
+        "1": 142
+      },
       "size": {
         "0": 210,
         "1": 46
       },
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [
         {
@@ -480,18 +305,72 @@
       }
     },
     {
-      "id": 22,
+      "id": 10,
       "type": "GetImageSizeAndCount",
-      "pos": [
-        1264,
-        157
-      ],
+      "pos": {
+        "0": 337,
+        "1": 254
+      },
       "size": {
         "0": 210,
         "1": 86
       },
       "flags": {},
-      "order": 9,
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 12
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            27
+          ],
+          "slot_index": 0,
+          "shape": 3
+        },
+        {
+          "name": "512 width",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "512 height",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        },
+        {
+          "name": "16 count",
+          "type": "INT",
+          "links": null,
+          "shape": 3
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "GetImageSizeAndCount"
+      }
+    },
+    {
+      "id": 22,
+      "type": "GetImageSizeAndCount",
+      "pos": {
+        "0": 1264,
+        "1": 157
+      },
+      "size": {
+        "0": 210,
+        "1": 86
+      },
+      "flags": {},
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
@@ -511,19 +390,19 @@
           "shape": 3
         },
         {
-          "name": "1080 width",
+          "name": "1024 width",
           "type": "INT",
           "links": null,
           "shape": 3
         },
         {
-          "name": "720 height",
+          "name": "1024 height",
           "type": "INT",
           "links": null,
           "shape": 3
         },
         {
-          "name": "31 count",
+          "name": "16 count",
           "type": "INT",
           "links": null,
           "shape": 3
@@ -536,10 +415,10 @@
     {
       "id": 17,
       "type": "VEnhancerSampler",
-      "pos": [
-        614,
-        142
-      ],
+      "pos": {
+        "0": 614,
+        "1": 142
+      },
       "size": {
         "0": 341.0126037597656,
         "1": 468.2628479003906
@@ -583,8 +462,8 @@
       "widgets_values": [
         "fast",
         15,
-        4,
-        4,
+        7.5,
+        8,
         2,
         42,
         "fixed",
@@ -592,7 +471,7 @@
         24,
         150,
         true,
-        "high speed, camera shaking closeup of a thrilled squirrel barely holds on to the wing of an f-14 jet"
+        "video of a wolf turning it's head"
       ]
     }
   ],
@@ -646,30 +525,6 @@
       "PADDING"
     ],
     [
-      34,
-      16,
-      0,
-      20,
-      1,
-      "IMAGE"
-    ],
-    [
-      36,
-      10,
-      0,
-      21,
-      0,
-      "IMAGE"
-    ],
-    [
-      37,
-      21,
-      0,
-      20,
-      0,
-      "IMAGE"
-    ],
-    [
       41,
       16,
       0,
@@ -698,10 +553,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.7513148009015777,
+      "scale": 0.6115909044841541,
       "offset": [
-        196.80351359793355,
-        134.81885425645316
+        576.3823886066237,
+        273.0428383354057
       ]
     }
   },

@@ -33,6 +33,7 @@ class DownloadAndLoadVEnhancerModel:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {
+            "model": (["venhancer_paper-fp16.safetensors", "venhancer_v2-fp16.safetensors"], {"default": "venhancer_v2-fp16.safetensors"}),
             "precision": (["fp16", "bf16", "fp8_e4m3fn"], {"default": "fp16"}),
             },
         }
@@ -41,7 +42,7 @@ class DownloadAndLoadVEnhancerModel:
     FUNCTION = "loadmodel"
     CATEGORY = "VEnhancer"
 
-    def loadmodel(self, precision):
+    def loadmodel(self, model, precision):
         device = mm.get_torch_device()
         mm.soft_empty_cache()
         dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp8_e4m3fn": torch.float8_e4m3fn}[precision]
@@ -49,12 +50,13 @@ class DownloadAndLoadVEnhancerModel:
         pbar = comfy.utils.ProgressBar(1)
         
         download_path = os.path.join(folder_paths.models_dir, "venhancer")
-        model_path = os.path.join(download_path, "venhancer_paper-fp16.safetensors")
+        model_path = os.path.join(download_path, model)
         
         if not os.path.exists(model_path):
             log.info(f"Downloading model to: {model_path}")
             from huggingface_hub import snapshot_download
-            snapshot_download(repo_id="Kijai/VEnhancer-fp16", 
+            snapshot_download(repo_id="Kijai/VEnhancer-fp16",
+                                allow_patterns=[model], 
                                 local_dir=download_path, 
                                 local_dir_use_symlinks=False)
 
