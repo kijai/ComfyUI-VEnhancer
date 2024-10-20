@@ -2,7 +2,7 @@
 
 import torch
 import torchsde
-from tqdm.auto import trange
+from tqdm import tqdm
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -44,7 +44,8 @@ def sample_heun(noise,
     Implements Algorithm 2 (Heun steps) from Karras et al. (2022).
     """
     x = noise * sigmas[0]
-    for i in trange(len(sigmas) - 1, disable=not show_progress):
+    progress_bar = tqdm(range(len(sigmas) - 1), disable=not show_progress)
+    for i in progress_bar:
         gamma = 0.
         if s_tmin <= sigmas[i] <= s_tmax and sigmas[i] < float('inf'):
             gamma = min(s_churn / (len(sigmas) - 1), 2**0.5 - 1)
@@ -160,8 +161,9 @@ def sample_dpmpp_2m_sde(noise,
     noise_sampler = BrownianTreeNoiseSampler(x, sigma_min, sigma_max)
     old_denoised = None
     h_last = None
-    comfy_pbar = ProgressBar(len(sigmas))
-    for i in trange(len(sigmas) - 1, disable=not show_progress):
+    comfy_pbar = ProgressBar(len(sigmas) - 1)
+    progress_bar = tqdm(range(len(sigmas) - 1))
+    for i in progress_bar:
         #logger.info(f'step: {i}')
         if sigmas[i] == float('inf'):
             # Euler method
@@ -197,4 +199,5 @@ def sample_dpmpp_2m_sde(noise,
             old_denoised = denoised
             h_last = h
         comfy_pbar.update(1)
+        progress_bar.update(1)
     return x

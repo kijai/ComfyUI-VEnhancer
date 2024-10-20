@@ -32,17 +32,17 @@ def preprocess(input_frames):
 
 
 def adjust_resolution(h, w, up_scale):
-    if h*up_scale < 720:
-        up_s = 720/h
-        target_h = int(up_s*h//2*2)
-        target_w = int(up_s*w//2*2)
-    elif h*w*up_scale*up_scale > 1280*2048:
-        up_s = np.sqrt(1280*2048/(h*w))
-        target_h = int(up_s*h//2*2)
-        target_w = int(up_s*w//2*2)
+    if h * w * up_scale * up_scale < 720 * 1280 * 1.5:
+        up_s = np.sqrt(720 * 1280 * 1.5 / (h * w))
+        target_h = int(up_s * h // 2 * 2)
+        target_w = int(up_s * w // 2 * 2)
+    elif h * w * up_scale * up_scale > 1152 * 2048:
+        up_s = np.sqrt(1152 * 2048 / (h * w))
+        target_h = int(up_s * h // 2 * 2)
+        target_w = int(up_s * w // 2 * 2)
     else:
-        target_h = int(up_scale*h//2*2)
-        target_w = int(up_scale*w//2*2)
+        target_h = int(up_scale * h // 2 * 2)
+        target_w = int(up_scale * w // 2 * 2)
     return (target_h, target_w)
 
 
