@@ -2,7 +2,7 @@ from typing import Any, Dict
 from einops import rearrange
 
 import torch
-import torch.cuda.amp as amp
+import numpy as np
 import torch.nn.functional as F
 
 from .modules.embedder import FrozenOpenCLIPEmbedder
@@ -17,6 +17,8 @@ from diffusers import AutoencoderKLTemporalDecoder
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+from comfy.model_management import get_autocast_device, soft_empty_cache
 
 class VideoToVideo():
     def __init__(self, generator, device):
@@ -56,7 +58,7 @@ class VideoToVideo():
         vae.to(self.device)
         self.vae = vae
 
-        torch.cuda.empty_cache()
+        soft_empty_cache()
 
         self.negative_prompt = cfg.negative_prompt
         self.positive_prompt = cfg.positive_prompt
@@ -66,7 +68,7 @@ class VideoToVideo():
 
 
     def test(self, input: Dict[str, Any], total_noise_levels=1000, \
-                 steps=50, solver_mode='fast', guide_scale=7.5, noise_aug=200):
+                 steps=50, solver_mode='fast', guide_scale=7.5, noise_aug=200, max_chunk_length=16, chunk_overlap_ratio=0.5):
         video_data = input['video_data']
         y = input['y']
         mask_cond = input['mask_cond']
@@ -98,14 +100,16 @@ class VideoToVideo():
         mask_cond = mask_cond.unsqueeze(0).to(self.device)
         s_cond = torch.LongTensor([s_cond]).to(self.device)
 
+        self.vae.to(self.device)
         video_data_feature = tensor2latent(video_data, self.vae)
+        self.vae.to(torch.device('cpu'))
         print("video_data_feature", video_data_feature.shape)
 
-        torch.cuda.empty_cache()
+        self.clip_encoder.to(self.device)
+        y = self.clip_encoder(y).detach()
+        self.clip_encoder.to(torch.device('cpu'))
 
-        y = self.clip_encoder(y).detach() 
-
-        with amp.autocast(enabled=True):
+        with torch.autocast(device_type=get_autocast_device(self.device), enabled=True):
 
             t_hint = torch.LongTensor([noise_aug-1]).to(self.device)
             video_in_low_fps = video_data_feature[:,:,::interp_f_num+1].clone()
@@ -120,8 +124,8 @@ class VideoToVideo():
             model_kwargs.append({'s_cond': s_cond})
             model_kwargs.append({'t_hint': t_hint})
 
-            torch.cuda.empty_cache()
-            chunk_inds = make_chunks(frames_num, interp_f_num) if frames_num > 32 else None
+            soft_empty_cache()
+            chunk_inds = make_chunks(frames_num, interp_f_num, max_chunk_length, chunk_overlap_ratio) if frames_num > max_chunk_length else None
 
             solver = 'dpmpp_2m_sde' # 'heun' | 'dpmpp_2m_sde' 
             gen_vid = self.diffusion.sample(
@@ -137,10 +141,9 @@ class VideoToVideo():
                 t_min=0,
                 discretization='trailing',
                 chunk_inds=chunk_inds)
-            torch.cuda.empty_cache()
+            soft_empty_cache()
             
             return gen_vid, padding
-            vid_tensor_gen = latent2tensor(gen_vid, self.vae)
 
         w1, w2, h1, h2 = padding
         vid_tensor_gen = vid_tensor_gen[:,:,h1:h+h1,w1:w+w1]
@@ -149,7 +152,7 @@ class VideoToVideo():
             vid_tensor_gen, '(b f) c h w -> b c f h w', b=bs)
 
         logger.info(f'sampling, finished.')
-        torch.cuda.empty_cache()
+        soft_empty_cache()
         
         return gen_video.type(torch.float32).cpu()
 
@@ -180,21 +183,27 @@ def _create_pad(h, max_len):
     return h1, h2
 
 
-def make_chunks(f_num, interp_f_num):
-    MAX_CHUNK_LEN, MAX_O_LEN, MIN_S_NUM = 24, 12, 8
-    chunk_len = (MAX_CHUNK_LEN-1)//(1+interp_f_num)*(interp_f_num+1)+1
-    o_len = (MAX_O_LEN-1)//(1+interp_f_num)*(interp_f_num+1)+1
-    ind = 0
-    chunk_inds = []
-    while ind<f_num:
-        if ind+chunk_len+MIN_S_NUM>=f_num:
-            chunk_inds.append(list(range(ind,f_num)))
-            break
-        else:
-            chunk_inds.append(list(range(ind,ind+chunk_len)))
-            ind += chunk_len-o_len  
+def make_chunks(f_num, interp_f_num, max_chunk_length=16, chunk_overlap_ratio=0.5):
+    MAX_CHUNK_LEN = max_chunk_length
+    MAX_O_LEN = MAX_CHUNK_LEN * chunk_overlap_ratio
+    chunk_len = int((MAX_CHUNK_LEN - 1) // (1 + interp_f_num) * (interp_f_num + 1) + 1)
+    o_len = int((MAX_O_LEN - 1) // (1 + interp_f_num) * (interp_f_num + 1) + 1)
+    chunk_inds = sliding_windows_1d(f_num, chunk_len, o_len)
     return chunk_inds
 
+
+def sliding_windows_1d(full_size, window_size, overlap_size):
+    stride = window_size - overlap_size
+    ind = 0
+    coords = []
+    while ind < full_size:
+        if ind + round(window_size * 1.33) >= full_size or ind + window_size >= full_size:
+            coords.append((ind, full_size))
+            break
+        else:
+            coords.append((ind, ind + window_size))
+            ind += stride
+    return coords
 
 def tensor2latent(t, vae):
     video_length = t.shape[1]

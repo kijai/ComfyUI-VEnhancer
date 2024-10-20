@@ -1,13 +1,10 @@
 import os
 import torch
-import torch.nn.functional as F
-import numpy as np
 import gc
 
 import folder_paths
 import comfy.model_management as mm
 import comfy.utils
-from easydict import EasyDict
 
 from .video_to_video.video_to_video_model import VideoToVideo
 from .video_to_video.utils.seed import setup_seed
@@ -99,8 +96,10 @@ class VEnhancerSampler:
             "input_fps": ("INT", {"default": 24, "min": 2, "max": 100, "step": 1}),
             "target_fps": ("INT", {"default": 24, "min": 2, "max": 100, "step": 1}),
             "noise_aug": ("INT", {"default": 300, "min": 0, "max": 1000, "step": 1}),
-            "keep_model_loaded": ("BOOLEAN", {"default": True}),
+            "keep_model_loaded": ("BOOLEAN", {"default": True, "tooltip": "Disable to offload model after processing."}),
             "prompt": ("STRING", {"default": "Cinematic, High Contrast, highly detailed, taken using a Canon EOS R camera, hyper detailed photo - realistic maximum detail, 32k, Color Grading, ultra HD, extreme meticulous detailing,  hyper sharpness, perfect without deformations.", "multiline": True}),
+            "max_chunk_length": ("INT", {"default": 16, "min": 1, "max": 100, "step": 1, "tooltip": "Maximum number of frames in a chunk."}),
+            "chunk_overlap_ratio": ("FLOAT", {"default": 0.5, "min": 0, "max": 1, "step": 0.1, "tooltip": "Overlap ratio between chunks."}),
             },
         }
 
@@ -109,7 +108,8 @@ class VEnhancerSampler:
     FUNCTION = "process"
     CATEGORY = "VEnhancer"
 
-    def process(self, venhancer_model, images, steps, guide_scale, solver_mode, s_cond, seed, prompt, up_scale, input_fps, target_fps, noise_aug, keep_model_loaded):
+    def process(self, venhancer_model, images, steps, guide_scale, solver_mode, s_cond, seed, prompt, up_scale, input_fps, target_fps, 
+                noise_aug, keep_model_loaded, max_chunk_length, chunk_overlap_ratio):
         
         B, H, W, C = images.shape
         device = mm.get_torch_device()
@@ -144,22 +144,23 @@ class VEnhancerSampler:
         setup_seed(seed)
         venhancer_model.generator.to(device)
         data_tensor = collate_fn(pre_data, device)
-        output, padding = venhancer_model.test(data_tensor, total_noise_levels, steps=steps, \
-                            solver_mode=solver_mode, guide_scale=guide_scale, \
-                            noise_aug=noise_aug)
+        output, padding = venhancer_model.test(
+            data_tensor, 
+            total_noise_levels, 
+            steps=steps, 
+            solver_mode=solver_mode, 
+            guide_scale=guide_scale, 
+            noise_aug=noise_aug, 
+            max_chunk_length=max_chunk_length, 
+            chunk_overlap_ratio=chunk_overlap_ratio
+            )
+        
         if not keep_model_loaded:
             venhancer_model.generator.to(offload_device)
             mm.soft_empty_cache()
             gc.collect()
-        print(output.shape)
+
         output = output[0].permute(1, 0, 2, 3) / 0.18215
-        print(output.shape)
-        
-        # min_val = output.min()
-        # max_val = output.max()
-        # output = (output - min_val) / (max_val - min_val)
-        # output = output[0].permute(1, 2, 3, 0).cpu().float()
-        # print(output.min(), output.max())
 
         return {"samples": output}, padding,
 
