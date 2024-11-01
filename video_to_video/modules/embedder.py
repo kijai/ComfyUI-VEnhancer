@@ -54,9 +54,13 @@ class FrozenOpenCLIPEmbedder(nn.Module):
     def encode_with_transformer(self, text):
         x = self.model.token_embedding(text)
         x = x + self.model.positional_embedding
-        x = x.permute(1, 0, 2)
-        x = self.text_transformer_forward(x, attn_mask=self.model.attn_mask)
-        x = x.permute(1, 0, 2)
+        
+        try:
+            x = self.text_transformer_forward(x, attn_mask=self.model.attn_mask)
+        except:
+            x = x.permute(1, 0, 2)
+            x = self.text_transformer_forward(x, attn_mask=self.model.attn_mask)
+            x = x.permute(1, 0, 2)
         x = self.model.ln_final(x)
         return x
 
@@ -64,11 +68,7 @@ class FrozenOpenCLIPEmbedder(nn.Module):
         for i, r in enumerate(self.model.transformer.resblocks):
             if i == len(self.model.transformer.resblocks) - self.layer_idx:
                 break
-            if self.model.transformer.grad_checkpointing and not torch.jit.is_scripting(
-            ):
-                x = checkpoint(r, x, attn_mask)
-            else:
-                x = r(x, attn_mask=attn_mask)
+            x = r(x, attn_mask=attn_mask)
         return x
 
     def encode(self, text):
