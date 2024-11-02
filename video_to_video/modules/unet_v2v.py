@@ -10,16 +10,10 @@ import torch.nn.functional as F
 #import xformers
 #import xformers.ops
 from einops import rearrange
-from fairscale.nn.checkpoint import checkpoint_wrapper
-
 
 USE_TEMPORAL_TRANSFORMER = True
 
-try:
-    from sageattention import SageAttention
-    optimized_attention = SageAttention
-except ImportError:
-    from comfy.ldm.modules.attention import optimized_attention
+from comfy.ldm.modules.attention import optimized_attention
 
 
 class DropPath(nn.Module):
@@ -100,6 +94,7 @@ def prob_mask_like(shape, prob, device):
         if mask.all():
             mask[0] = False
         return mask
+
 
 
 class MemoryEfficientCrossAttention(nn.Module):
@@ -1512,36 +1507,22 @@ class Vid2VidSDUNet(nn.Module):
                         video_mask,
                         reference=None):
         if isinstance(module, ResidualBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, reference)
         elif isinstance(module, ResBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, self.batch)
         elif isinstance(module, SpatialTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, TemporalTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, context)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, CrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, MemoryEfficientCrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, BasicTransformerBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, FeedForward):
             x = module(x, context)
@@ -1552,26 +1533,18 @@ class Vid2VidSDUNet(nn.Module):
         elif isinstance(module, Resample):
             x = module(x, reference)
         elif isinstance(module, TemporalAttentionBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalAttentionMultiBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, InitTemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
@@ -1683,36 +1656,22 @@ class ControlledV2VUNet(Vid2VidSDUNet):
                         video_mask,
                         reference=None):
         if isinstance(module, ResidualBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, reference)
         elif isinstance(module, ResBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, self.batch)
         elif isinstance(module, SpatialTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, TemporalTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, context)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, CrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, MemoryEfficientCrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, BasicTransformerBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, FeedForward):
             x = module(x, context)
@@ -1723,26 +1682,18 @@ class ControlledV2VUNet(Vid2VidSDUNet):
         elif isinstance(module, Resample):
             x = module(x, reference)
         elif isinstance(module, TemporalAttentionBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalAttentionMultiBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, InitTemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
@@ -2095,36 +2046,22 @@ class VideoControlNet(nn.Module):
                         video_mask,
                         reference=None):
         if isinstance(module, ResidualBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, reference)
         elif isinstance(module, ResBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = x.contiguous()
             x = module(x, e, self.batch)
         elif isinstance(module, SpatialTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, TemporalTransformer):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, context)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, CrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, MemoryEfficientCrossAttention):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, BasicTransformerBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = module(x, context)
         elif isinstance(module, FeedForward):
             x = module(x, context)
@@ -2135,26 +2072,18 @@ class VideoControlNet(nn.Module):
         elif isinstance(module, Resample):
             x = module(x, reference)
         elif isinstance(module, TemporalAttentionBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalAttentionMultiBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x, time_rel_pos_bias, focus_present_mask, video_mask)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, InitTemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')
         elif isinstance(module, TemporalConvBlock):
-            module = checkpoint_wrapper(
-                module) if self.use_checkpoint else module
             x = rearrange(x, '(b f) c h w -> b c f h w', b=self.batch)
             x = module(x)
             x = rearrange(x, 'b c f h w -> (b f) c h w')

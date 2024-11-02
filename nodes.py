@@ -32,6 +32,7 @@ class DownloadAndLoadVEnhancerModel:
         return {"required": {
             "model": (["venhancer_paper-fp16.safetensors", "venhancer_v2-fp16.safetensors"], {"default": "venhancer_v2-fp16.safetensors"}),
             "precision": (["fp16", "bf16", "fp8_e4m3fn"], {"default": "fp16"}),
+            "torch_compile": ("BOOLEAN", {"default": False, "tooltip": "Enable to compile the model using torch.compile inductor backend."}),
             },
         }
     RETURN_TYPES = ("VENCHANCER_MODEL",)
@@ -39,7 +40,7 @@ class DownloadAndLoadVEnhancerModel:
     FUNCTION = "loadmodel"
     CATEGORY = "VEnhancer"
 
-    def loadmodel(self, model, precision):
+    def loadmodel(self, model, precision, torch_compile):
         device = mm.get_torch_device()
         mm.soft_empty_cache()
         dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp8_e4m3fn": torch.float8_e4m3fn}[precision]
@@ -74,6 +75,9 @@ class DownloadAndLoadVEnhancerModel:
         leftover_keys = generator.load_state_dict(sd, strict=True)
         generator.to(device).eval()
         print("leftover_keys", leftover_keys)
+
+        if torch_compile:
+            generator = torch.compile(generator, dynamic=False, backend="inductor")
     
         self.model = VideoToVideo(generator, device)
         
